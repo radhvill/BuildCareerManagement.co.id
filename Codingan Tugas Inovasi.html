@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build Your Own Career </title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '8ACFF8',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- Header / Navigation -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="bg-brand-600 text-white p-2 rounded-lg font-bold text-xl flex items-center justify-center w-10 h-10">
+          <i class="fa-solid fa-dna"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Build Career <span class="text-brand-600">Management</span></h1>
+          <p class="text-xs text-slate-500">System Planning & Forecasting berbasis 3 Level Scanning</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button id="restartBtn" onclick="resetApp()" class="hidden px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
+          <i class="fa-solid fa-rotate-left mr-1"></i> Ulangi Tes
+        </button>
+        <button id="printBtn" onclick="window.print()" class="hidden px-3 py-1.5 text-xs font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition">
+          <i class="fa-solid fa-print mr-1"></i> Cetak Laporan
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- LANDING / PERSONA SELECTION SCREEN -->
+    <section id="personaScreen" class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-10 text-center">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl mb-4">
+        <i class="fa-solid fa-compass-drafting text-2xl"></i>
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-3">Selamat Datang di System Planning & Forecasting Karir</h2>
+      <p class="text-slate-600 text-sm sm:text-base mb-8 max-w-xl mx-auto">
+        Sistem ini menggunakan algoritma <span class="font-semibold text-slate-800">3-Level Scanning</span> (Character, Interest, Experience) untuk memetakan kecondongan karir Anda di 4 konsentrasi Manajemen: <span class="text-blue-600 font-semibold">Keuangan</span>, <span class="text-emerald-600 font-semibold">SDM</span>, <span class="text-purple-600 font-semibold">Bisnis Digital</span>, dan <span class="text-amber-600 font-semibold">Pemasaran</span>.
+      </p>
+
+     
+
+      <button onclick="startAssessment()" class="w-full sm:w-auto px-8 py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-lg shadow-brand-500/25 transition flex items-center justify-center mx-auto space-x-2">
+        <span>Mulai Scanning Karir (15 Pertanyaan)</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </section>
+
+    <!-- ASSESSMENT WIZARD SCREEN -->
+    <section id="assessmentScreen" class="hidden max-w-3xl mx-auto">
+      
+      <!-- Progress Bar -->
+      <div class="bg-white rounded-xl border border-slate-200 p-4 mb-6 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <span id="levelBadge" class="text-xs font-bold px-2.5 py-1 bg-brand-100 text-brand-700 rounded-md uppercase tracking-wider">Level 1: Character</span>
+          <span id="questionCounter" class="text-xs font-bold text-slate-500">Pertanyaan 1 dari 15</span>
+        </div>
+        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+          <div id="progressBar" class="bg-brand-600 h-full w-1/15 transition-all duration-300"></div>
+        </div>
+      </div>
+
+      <!-- Question Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm mb-6">
+        <h3 id="questionText" class="text-base sm:text-lg font-bold text-slate-900 mb-6 leading-relaxed">
+          Loading question...
+        </h3>
+
+        <div id="optionsContainer" class="space-y-3">
+          <!-- Options rendered via JS -->
+        </div>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="flex justify-between items-center">
+        <button id="prevBtn" onclick="prevQuestion()" class="hidden px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-sm rounded-xl transition">
+          <i class="fa-solid fa-arrow-left mr-1.5"></i> Sebelumnya
+        </button>
+        <div class="ml-auto"></div>
+        <button id="nextBtn" onclick="nextQuestion()" disabled class="px-6 py-2.5 bg-slate-300 text-slate-500 font-semibold text-sm rounded-xl transition cursor-not-allowed">
+          Lanjut <i class="fa-solid fa-arrow-right ml-1.5"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- DASHBOARD RESULT SCREEN -->
+    <section id="resultScreen" class="hidden space-y-8">
+      
+      <!-- DNA Banner -->
+      <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-brand-900 rounded-2xl p-6 sm:p-8 text-white shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div class="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-brand-200 mb-3">
+              <i class="fa-solid fa-dna text-brand-400"></i>
+              <span>Hasil Analisis Profil Karir</span>
+            </div>
+            <h2 id="dnaArchetype" class="text-2xl sm:text-4xl font-black text-white mb-2">
+              Financial Risk Analyst
+            </h2>
+            <p id="dnaDescription" class="text-slate-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
+              Profil Anda menunjukkan kecondongan dominan pada bidang Keuangan dengan fokus pada analisis kuantitatif dan kepatuhan.
+            </p>
+          </div>
+          <div class="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10 text-center min-w-[160px]">
+            <span class="block text-xs text-slate-300 mb-1">Top Career Match</span>
+            <span id="topMatchScore" class="text-3xl font-black text-brand-400">0%</span>
+            <span id="topMatchName" class="block text-xs font-bold text-white mt-1">Keuangan</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid 1: Radar & Bar Charts -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center">
+            <i class="fa-solid fa-chart-pie text-brand-600 mr-2"></i> Peta Kecondongan Karir (Radar Analysis)
+          </h3>
+          <div class="relative w-full aspect-square max-h-[320px] mx-auto">
+            <canvas id="radarChart"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center">
+            <i class="fa-solid fa-chart-simple text-brand-600 mr-2"></i> Distribusi Poin Per Konsentrasi
+          </h3>
+          <div class="relative w-full aspect-square max-h-[320px] mx-auto">
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ranked Career Recommendations Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-200">
+          <h3 class="text-base font-bold text-slate-900 flex items-center">
+            <i class="fa-solid fa-ranking-star text-brand-600 mr-2"></i> Peringkat Keselarasan Karir (Career Fit Ranking)
+          </h3>
+          <p class="text-xs text-slate-500 mt-1">Dihitung berdasarkan integrasi nilai Character, Interest, dan Experience dengan pembobotan dinamis.</p>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-50 text-xs text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="px-6 py-4">Konsentrasi Manajemen</th>
+                <th class="px-6 py-4">Current Fit</th>
+                <th class="px-6 py-4">Potential Fit</th>
+                <th class="px-6 py-4">Skill Gap Index</th>
+                <th class="px-6 py-4">Status &amp; Action</th>
+              </tr>
+            </thead>
+            <tbody id="careerTableBody" class="divide-y divide-slate-200">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Skill Gap Analysis & Forecasting Roadmap -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Gap Analysis Column -->
+        <div class="lg:col-span-1 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center">
+            <i class="fa-solid fa-triangle-exclamation text-amber-500 mr-2"></i> Analisis Kesenjangan Skill
+          </h3>
+          <div id="gapContainer" class="space-y-4">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Career Forecasting Timeline -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center">
+            <i class="fa-solid fa-timeline text-brand-600 mr-2"></i> Projected Career Trajectory &amp; Learning Roadmap
+          </h3>
+
+          <div class="space-y-6 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-200">
+            
+            <!-- Short Term -->
+            <div class="relative pl-8">
+              <div class="absolute left-0 top-1 w-7 h-7 bg-brand-600 text-white rounded-full flex items-center justify-center text-xs font-bold ring-4 ring-white">1</div>
+              <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <span class="text-xs font-bold text-brand-600 uppercase tracking-wider">Jangka Pendek (0 - 1 Tahun)</span>
+                <h4 id="shortTermTitle" class="font-bold text-slate-900 text-sm mt-0.5">Junior Role Entry</h4>
+                <p id="shortTermDesc" class="text-xs text-slate-600 mt-1">Fokus menutup kesenjangan teknis awal dan membina kompetensi dasar.</p>
+                <div id="shortTermAction" class="mt-3 text-xs bg-white p-2.5 rounded-lg border border-slate-200 text-slate-700 font-medium">
+                  Rekomendasi: Sertifikasi dasar &amp; Hands-on project.
+                </div>
+              </div>
+            </div>
+
+            <!-- Medium Term -->
+            <div class="relative pl-8">
+              <div class="absolute left-0 top-1 w-7 h-7 bg-slate-700 text-white rounded-full flex items-center justify-center text-xs font-bold ring-4 ring-white">2</div>
+              <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Jangka Menengah (1 - 3 Tahun)</span>
+                <h4 id="medTermTitle" class="font-bold text-slate-900 text-sm mt-0.5">Specialist / Mid-Level Manager</h4>
+                <p id="medTermDesc" class="text-xs text-slate-600 mt-1">Memimpin proyek secara mandiri dan mengoptimalkan dampak pada organisasi.</p>
+              </div>
+            </div>
+
+            <!-- Long Term -->
+            <div class="relative pl-8">
+              <div class="absolute left-0 top-1 w-7 h-7 bg-slate-900 text-white rounded-full flex items-center justify-center text-xs font-bold ring-4 ring-white">3</div>
+              <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Jangka Panjang (3 - 5 Tahun)</span>
+                <h4 id="longTermTitle" class="font-bold text-slate-900 text-sm mt-0.5">Department Head / Strategic Leader</h4>
+                <p id="longTermDesc" class="text-xs text-slate-600 mt-1">Mengendalikan arah strategis dan portofolio unit bisnis utama.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4">
+      <p>© 2026 CareerDNA Framework. Algoritma Prediksi Karir Manajemen berbasis Multi-Level Evidence.</p>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // DATA QUESTION BANK (15 Pertanyaan Baru)
+    const questionBank = [
+      // LEVEL 1: CHARACTER
+      {
+        level: "Level 1: Character Scanning",
+        text: "C1. Ketika menghadapi masalah yang cukup kompleks, pendekatan mana yang paling sering kamu lakukan?",
+        options: [
+          { text: "A. Memeriksa fakta, angka, dan detail sebelum mengambil keputusan.", cat: "KEU" },
+          { text: "B. Memahami orang-orang yang terlibat dan mencari solusi yang adil.", cat: "SDM" },
+          { text: "C. Mencari cara baru dengan memanfaatkan teknologi atau sistem.", cat: "BDG" },
+          { text: "D. Mencari peluang, memahami kebutuhan orang, dan menyusun strategi.", cat: "MKT" }
+        ]
+      },
+      {
+        level: "Level 1: Character Scanning",
+        text: "C2. Dalam sebuah tim, peran apa yang paling sering kamu ambil secara alami?",
+        options: [
+          { text: "A. Memeriksa data dan ketepatan perhitungan.", cat: "KEU" },
+          { text: "B. Menjembatani komunikasi dan membantu anggota tim berkembang.", cat: "SDM" },
+          { text: "C. Mengatur sistem kerja, tools, atau alur proses agar lebih efisien.", cat: "BDG" },
+          { text: "D. Menyampaikan ide, meyakinkan orang lain, dan mencari peluang.", cat: "MKT" }
+        ]
+      },
+      {
+        level: "Level 1: Character Scanning",
+        text: "C3. Situasi kerja seperti apa yang paling membuatmu nyaman?",
+        options: [
+          { text: "A. Pekerjaan yang membutuhkan ketelitian dan standar yang jelas.", cat: "KEU" },
+          { text: "B. Pekerjaan yang melibatkan interaksi, koordinasi, dan pengembangan orang.", cat: "SDM" },
+          { text: "C. Pekerjaan yang dinamis, menggunakan teknologi, dan terus berubah.", cat: "BDG" },
+          { text: "D. Pekerjaan yang menantang kreativitas, persuasi, dan pencapaian target.", cat: "MKT" }
+        ]
+      },
+      {
+        level: "Level 1: Character Scanning",
+        text: "C4. Ketika harus mengambil keputusan penting, apa yang paling kamu prioritaskan?",
+        options: [
+          { text: "A. Akurasi informasi dan risiko.", cat: "KEU" },
+          { text: "B. Dampak keputusan terhadap orang dan dinamika tim.", cat: "SDM" },
+          { text: "C. Efisiensi, skalabilitas, dan efektivitas sistem.", cat: "BDG" },
+          { text: "D. Peluang yang tersedia dan potensi hasil yang bisa dicapai.", cat: "MKT" }
+        ]
+      },
+      {
+        level: "Level 1: Character Scanning",
+        text: "C5. Jika diberi kebebasan mengembangkan kemampuan, kamu cenderung memilih aktivitas yang mana?",
+        options: [
+          { text: "A. Memperkuat analisis, ketelitian, dan pengelolaan risiko.", cat: "KEU" },
+          { text: "B. Memperdalam komunikasi, kepemimpinan, dan pengembangan individu.", cat: "SDM" },
+          { text: "C. Mempelajari teknologi, data, dan pengembangan proses digital.", cat: "BDG" },
+          { text: "D. Mengasah kreativitas, negosiasi, dan strategi pemasaran. Kreativitas serta negoisasi & Strategi", cat: "MKT" }
+        ]
+      },
+
+      // LEVEL 2: INTEREST
+      {
+        level: "Level 2: Interest Scanning",
+        text: "I1. Kalau kamu diberi kesempatan memilih proyek selama satu semester, proyek mana yang paling menarik?",
+        options: [
+          { text: "A. Menganalisis kondisi keuangan sebuah perusahaan dan mencari cara meningkatkan profitabilitas.", cat: "KEU" },
+          { text: "B. Merancang program untuk meningkatkan motivasi, kemampuan, dan produktivitas anggota organisasi.", cat: "SDM" },
+          { text: "C. Mengembangkan ide bisnis yang memanfaatkan teknologi atau platform digital.", cat: "BDG" },
+          { text: "D. Membuat strategi untuk memperkenalkan sebuah produk agar menarik bagi target konsumen.", cat: "MKT" }
+        ]
+      },
+      {
+        level: "Level 2: Interest Scanning",
+        text: "I2. Topik mana yang paling membuat kamu penasaran untuk dipelajari lebih dalam?",
+        options: [
+          { text: "A. Bagaimana perusahaan mengelola uang, investasi, biaya, dan risiko.", cat: "KEU" },
+          { text: "B. Mengapa seseorang memiliki motivasi yang berbeda dan bagaimana organisasi dapat mengembangkan mereka.", cat: "SDM" },
+          { text: "C. Bagaimana teknologi mengubah cara perusahaan menjalankan bisnis dan menciptakan model bisnis baru.", cat: "BDG" },
+          { text: "D. Mengapa konsumen memilih suatu produk dan bagaimana sebuah brand dapat memengaruhi keputusan mereka.", cat: "MKT" }
+        ]
+      },
+      {
+        level: "Level 2: Interest Scanning",
+        text: "I3. Bayangkan kamu memiliki waktu luang untuk mempelajari sesuatu yang berhubungan dengan karier. Mana yang paling ingin kamu eksplorasi?",
+        options: [
+          { text: "A. Analisis laporan keuangan dan strategi investasi.", cat: "KEU" },
+          { text: "B. Leadership, komunikasi interpersonal, dan pengembangan karyawan.", cat: "SDM" },
+          { text: "C. E-commerce, startup, artificial intelligence, atau digital business.", cat: "BDG" },
+          { text: "D. Branding, social media, consumer behavior, atau advertising.", cat: "MKT" }
+        ]
+      },
+      {
+        level: "Level 2: Interest Scanning",
+        text: "I4. Jika kamu harus memilih satu masalah untuk diselesaikan, mana yang paling menarik bagimu?",
+        options: [
+          { text: "A. \"Mengapa perusahaan mengalami penurunan profit dan bagaimana memperbaikinya?\"", cat: "KEU" },
+          { text: "B. \"Mengapa performa sebuah tim menurun dan bagaimana membuat anggotanya berkembang?\"", cat: "SDM" },
+          { text: "C. \"Bagaimana teknologi dapat membuat proses bisnis menjadi lebih cepat dan efisien?\"", cat: "BDG" },
+          { text: "D. \"Mengapa produk yang bagus tidak diminati konsumen dan bagaimana membuatnya lebih menarik?\"", cat: "MKT" }
+        ]
+      },
+      {
+        level: "Level 2: Interest Scanning",
+        text: "I5. Dalam jangka panjang, aktivitas seperti apa yang paling ingin kamu lakukan dalam pekerjaan?",
+        options: [
+          { text: "A. Mengambil keputusan berdasarkan angka, kondisi finansial, dan risiko bisnis.", cat: "KEU" },
+          { text: "B. Mengembangkan orang, membangun budaya organisasi, dan membantu tim mencapai potensinya.", cat: "SDM" },
+          { text: "C. Mengembangkan ide, produk, atau model bisnis yang memanfaatkan teknologi dan perubahan digital.", cat: "BDG" },
+          { text: "D. Membangun brand, memahami konsumen, membuat strategi komunikasi, dan menciptakan demand.", cat: "MKT" }
+        ]
+      },
+
+      // LEVEL 3: EXPERIENCE
+      {
+        level: "Level 3: Experience Scanning",
+        text: "E1. Dari pengalaman yang pernah kamu lakukan, aktivitas mana yang paling sering kamu kerjakan?",
+        options: [
+          { text: "A. Mengelola uang, membuat anggaran, melakukan pencatatan, menganalisis laporan, atau menghitung keuntungan/biaya.", cat: "KEU" },
+          { text: "B. Mengelola anggota tim, mengikuti organisasi, melakukan koordinasi, membantu orang lain, atau terlibat dalam kegiatan pengembangan anggota.", cat: "SDM" },
+          { text: "C. Menggunakan teknologi untuk membuat sesuatu, mengelola platform digital, mengembangkan sistem, mengolah data, atau menjalankan proyek berbasis digital.", cat: "BDG" },
+          { text: "D. Membuat konten, menjual produk, melakukan promosi, mengelola media sosial, melakukan riset konsumen, atau membuat strategi komunikasi.", cat: "MKT" }
+        ]
+      },
+      {
+        level: "Level 3: Experience Scanning",
+        text: "E2. Jika melihat pengalaman organisasi, kuliah, pekerjaan, freelance, atau proyek pribadi kamu, tanggung jawab mana yang paling sering kamu jalankan?",
+        options: [
+          { text: "A. Bertanggung jawab terhadap anggaran, keuangan, pencatatan, atau analisis finansial.", cat: "KEU" },
+          { text: "B. Bertanggung jawab terhadap anggota, pembagian tugas, koordinasi, atau pengembangan tim.", cat: "SDM" },
+          { text: "C. Bertanggung jawab terhadap sistem, teknologi, platform digital, data, atau pengembangan proses.", cat: "BDG" },
+          { text: "D. Bertanggung jawab terhadap promosi, komunikasi, pelanggan, penjualan, atau brand.", cat: "MKT" }
+        ]
+      },
+      {
+        level: "Level 3: Experience Scanning",
+        text: "E3. Dari kemampuan yang sudah pernah kamu praktikkan, mana yang paling kamu percaya diri?",
+        options: [
+          { text: "A. Mengolah angka, membuat perhitungan, membaca data finansial, atau melakukan analisis keuangan.", cat: "KEU" },
+          { text: "B. Berkomunikasi dengan orang, mengelola konflik, memimpin tim, atau membantu orang berkembang.", cat: "SDM" },
+          { text: "C. Menggunakan teknologi, mengolah data, memecahkan masalah menggunakan tools digital, atau memahami proses bisnis digital.", cat: "BDG" },
+          { text: "D. Membuat konten, melakukan presentasi, menjual ide/produk, membangun relasi, atau memahami konsumen.", cat: "MKT" }
+        ]
+      },
+      {
+        level: "Level 3: Experience Scanning",
+        text: "E4. Bayangkan kamu mendapatkan proyek baru besok. Berdasarkan pengalamanmu, kontribusi apa yang paling siap kamu berikan?",
+        options: [
+          { text: "A. Membuat perhitungan, mengelola budget, atau menganalisis kondisi finansial proyek.", cat: "KEU" },
+          { text: "B. Mengatur orang, membagi pekerjaan, menjaga komunikasi, dan memastikan anggota tim bekerja dengan baik.", cat: "SDM" },
+          { text: "C. Membuat sistem kerja, menggunakan tools digital, menganalisis data, atau mencari solusi berbasis teknologi.", cat: "BDG" },
+          { text: "D. Membuat strategi komunikasi, mempromosikan proyek, memahami target audience, atau mencari pelanggan.", cat: "MKT" }
+        ]
+      },
+      {
+        level: "Level 3: Experience Scanning",
+        text: "E5. Jika harus menunjukkan satu bukti pengalaman yang paling relevan dengan karier masa depanmu, mana yang paling mungkin kamu tunjukkan?",
+        options: [
+          { text: "A. Pernah menangani laporan, anggaran, analisis finansial, atau proyek yang berkaitan dengan keuangan.", cat: "KEU" },
+          { text: "B. Pernah memimpin organisasi/tim, mengembangkan anggota, mengelola kegiatan, atau menangani masalah antaranggota.", cat: "SDM" },
+          { text: "C. Pernah membuat website, aplikasi, sistem, proyek digital, analisis data, online business, atau proyek teknologi lainnya.", cat: "BDG" },
+          { text: "D. Pernah membuat campaign, mengelola social media, melakukan penjualan, membuat konten, branding, atau menjalankan kegiatan pemasaran.", cat: "MKT" }
+        ]
+      }
+    ];
+
+    // CAREER METADATA DATABASE
+    const careerDatabase = {
+      KEU: {
+        name: "Manajemen Keuangan",
+        archetype: "Financial Strategist & Risk Analyst",
+        desc: "Memiliki keunggulan dalam analisis kuantitatif, perencanaan arus kas, mitigasi risiko finansial, dan pengoptimalan struktur modal perusahaan.",
+        shortRole: "Junior Financial Analyst / Corporate Treasury Staff",
+        shortDesc: "Menangani analisis laporan keuangan dasar, penganggaran bulanan, dan kelayakan arus kas.",
+        shortAction: "Rekomendasi: Sertifikasi Brevet Pajak / Financial Modeling (Excel) & Kuasai dasar Ratio Analysis.",
+        medRole: "Financial Planning & Analysis (FP&A) Manager",
+        medDesc: "Memimpin penyusunan alokasi anggaran tahunan, studi kelayakan investasi, dan strategi audit.",
+        longRole: "Chief Financial Officer (CFO) / Finance Director",
+        longDesc: "Menentukan strategi portofolio keuangan tingkat tinggi, hubungan investor, dan keputusan M&A.",
+        gaps: [
+          { title: "Financial Modeling & Valuation", req: "Tinggi" },
+          { title: "Regulasi Perpajakan & Audit", req: "Sedang" },
+          { title: "Excel Macro / SQL Query", req: "Sedang" }
+        ]
+      },
+      SDM: {
+        name: "Manajemen SDM (Human Capital)",
+        archetype: "People & Organizational Strategist",
+        desc: "Unggul dalam pengelolaan hubungan antarmanusia, rekrutmen talenta, perancangan budaya kerja, serta strategi efisiensi organisasi.",
+        shortRole: "Talent Acquisition / HR Generalist Staff",
+        shortDesc: "Mengelola proses rekrutmen, onboarding karyawan baru, dan administrasi HRIS.",
+        shortAction: "Rekomendasi: Sertifikasi HR Management Dasar & Pelajari Undang-Undang Ketenagakerjaan.",
+        medRole: "HR Business Partner (HRBP) / Talent Manager",
+        medDesc: "Menyelaraskan strategi pengembangan karyawan dengan target pencapaian unit bisnis.",
+        longRole: "Chief Human Resources Officer (CHRO) / People VP",
+        longDesc: "Merancang arsitektur organisasi, budaya perusahaan global, dan suksesi kepemimpinan.",
+        gaps: [
+          { title: "Hukum Ketenagakerjaan & UU Kerja", req: "Tinggi" },
+          { title: "HR Analytics & Performance Appraisal", req: "Sedang" },
+          { title: "Psikologi Komunikasi & Mediasi", req: "Tinggi" }
+        ]
+      },
+      BDG: {
+        name: "Manajemen Bisnis Digital",
+        archetype: "Digital Product & Innovation Specialist",
+        desc: "Dominan dalam pemanfaatan teknologi, otomatisasi sistem bisnis, analisis data digital, dan perancangan produk digital.",
+        shortRole: "Associate Product Manager / Business Analyst",
+        shortDesc: "Menyusun requirement fitur aplikasi, menganalisis data pengguna, dan membantu sprint tim tech.",
+        shortAction: "Rekomendasi: Pelajari Agile/Scrum Framework, Wireframing (Figma), & SQL/Data Analytics.",
+        medRole: "Product Manager / Digital Transformation Lead",
+        medDesc: "Memimpin ekosistem produk digital ujung-ke-ujung dan otomatisasi alur kerja operasional.",
+        longRole: "Chief Technology Officer (CTO) / Head of Digital",
+        longDesc: "Mengarahkan peta jalan teknologi dan inovasi model bisnis yang disruptif di pasar.",
+        gaps: [
+          { title: "Agile Project Management (Scrum)", req: "Tinggi" },
+          { title: "Data Analytics (SQL/Python/Tableau)", req: "Tinggi" },
+          { title: "User Experience (UX) Flow", req: "Sedang" }
+        ]
+      },
+      MKT: {
+        name: "Manajemen Pemasaran",
+        archetype: "Brand Strategist & Growth Marketer",
+        desc: "Sangat menonjol dalam komunikasi persuasif, riset perilaku konsumen, eksekusi kampanye kreatif, dan penetrasi pasar.",
+        shortRole: "Digital Marketing Specialist / Brand Executive",
+        shortDesc: "Mengelola media sosial, membuat konten kampanye promosi, dan mengoptimalkan iklan digital.",
+        shortAction: "Rekomendasi: Sertifikasi Google/Meta Ads, Copywriting, & Analytics Media Sosial.",
+        medRole: "Brand Manager / Performance Marketing Lead",
+        medDesc: "Mengelola anggaran pemasaran besar, mengukur ROI kampanye, dan strategi pangsa pasar.",
+        longRole: "Chief Marketing Officer (CMO) / Commercial VP",
+        longDesc: "Memegang reputasi merek global, ekspansi komersial, dan penetapan arah positioning produk.",
+        gaps: [
+          { title: "Performance Ads (Meta & Google Ads)", req: "Tinggi" },
+          { title: "Consumer Behavior Analysis", req: "Sedang" },
+          { title: "Content Strategy & Copywriting", req: "Tinggi" }
+        ]
+      }
+    };
+
+    // STATE APP
+    let selectedPersona = "fresh_grad";
+    let currentQuestionIndex = 0;
+    let userAnswers = new Array(15).fill(null);
+    let radarChartInstance = null;
+    let barChartInstance = null;
+
+    // PERSONA WEIGHTS
+    const personaWeights = {
+      fresh_grad: { char: 0.35, int: 0.40, exp: 0.25 },
+      experienced: { char: 0.25, int: 0.25, exp: 0.50 },
+      switcher: { char: 0.35, int: 0.45, exp: 0.20 }
+    };
+
+    function selectPersona(el) {
+      selectedPersona = el.value;
+      document.querySelectorAll('.persona-card').forEach(card => {
+        card.classList.remove('border-brand-600', 'bg-brand-50/50');
+        card.classList.add('border-slate-200');
+      });
+      el.closest('.persona-card').classList.remove('border-slate-200');
+      el.closest('.persona-card').classList.add('border-brand-600', 'bg-brand-50/50');
+    }
+
+    function startAssessment() {
+      document.getElementById('personaScreen').classList.add('hidden');
+      document.getElementById('assessmentScreen').classList.remove('hidden');
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const q = questionBank[currentQuestionIndex];
+      document.getElementById('levelBadge').innerText = q.level;
+      document.getElementById('questionCounter').innerText = `Pertanyaan ${currentQuestionIndex + 1} dari 15`;
+      document.getElementById('progressBar').style.width = `${((currentQuestionIndex + 1) / 15) * 100}%`;
+      document.getElementById('questionText').innerText = q.text;
+
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const isSelected = userAnswers[currentQuestionIndex] === opt.cat;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => selectOption(opt.cat);
+        btn.className = `w-full text-left p-4 rounded-xl border-2 transition flex items-start space-x-3 ${
+          isSelected 
+            ? 'border-brand-600 bg-brand-50/60 text-brand-900 font-semibold' 
+            : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700'
+        }`;
+        btn.innerHTML = `
+          <span class="w-6 h-6 rounded-full border flex items-center justify-center text-xs font-bold mt-0.5 shrink-0 ${
+            isSelected ? 'border-brand-600 bg-brand-600 text-white' : 'border-slate-300 text-slate-400'
+          }">
+            ${String.fromCharCode(65 + idx)}
+          </span>
+          <span class="text-sm leading-relaxed">${opt.text}</span>
+        `;
+        container.appendChild(btn);
+      });
+
+      // Navigation Buttons
+      const prevBtn = document.getElementById('prevBtn');
+      if (currentQuestionIndex > 0) {
+        prevBtn.classList.remove('hidden');
+      } else {
+        prevBtn.classList.add('hidden');
+      }
+
+      const nextBtn = document.getElementById('nextBtn');
+      if (userAnswers[currentQuestionIndex] !== null) {
+        nextBtn.disabled = false;
+        nextBtn.classList.remove('bg-slate-300', 'text-slate-500', 'cursor-not-allowed');
+        nextBtn.classList.add('bg-brand-600', 'text-white', 'hover:bg-brand-700', 'shadow-md');
+      } else {
+        nextBtn.disabled = true;
+        nextBtn.classList.add('bg-slate-300', 'text-slate-500', 'cursor-not-allowed');
+        nextBtn.classList.remove('bg-brand-600', 'text-white', 'hover:bg-brand-700', 'shadow-md');
+      }
+    }
+
+    function selectOption(cat) {
+      userAnswers[currentQuestionIndex] = cat;
+      renderQuestion();
+    }
+
+    function prevQuestion() {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        renderQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      if (currentQuestionIndex < 14) {
+        currentQuestionIndex++;
+        renderQuestion();
+      } else {
+        calculateAndShowResult();
+      }
+    }
+
+    // CALCULATE & SHOW RESULT
+    function calculateAndShowResult() {
+      document.getElementById('assessmentScreen').classList.add('hidden');
+      document.getElementById('resultScreen').classList.remove('hidden');
+      document.getElementById('restartBtn').classList.remove('hidden');
+      document.getElementById('printBtn').classList.remove('hidden');
+
+      // 1. Calculate Raw Scores per Level per Category
+      const rawScores = {
+        KEU: { char: 0, int: 0, exp: 0 },
+        SDM: { char: 0, int: 0, exp: 0 },
+        BDG: { char: 0, int: 0, exp: 0 },
+        MKT: { char: 0, int: 0, exp: 0 }
+      };
+
+      userAnswers.forEach((ans, idx) => {
+        let levelKey = "char";
+        if (idx >= 5 && idx < 10) levelKey = "int";
+        if (idx >= 10) levelKey = "exp";
+        
+        if (ans) {
+          rawScores[ans][levelKey] += 1; // max 5 per level
+        }
+      });
+
+      // 2. Apply Dynamic Weighting Formula
+      const weights = personaWeights[selectedPersona];
+      const categoryResults = [];
+
+      Object.keys(rawScores).forEach(cat => {
+        const cScore = (rawScores[cat].char / 5) * 100;
+        const iScore = (rawScores[cat].int / 5) * 100;
+        const eScore = (rawScores[cat].exp / 5) * 100;
+
+        const currentFit = Math.round((cScore * weights.char) + (iScore * weights.int) + (eScore * weights.exp));
+        const potentialFit = Math.round(((cScore * weights.char) + (iScore * weights.int)) / (weights.char + weights.int));
+        const skillGapIndex = Math.round(100 - eScore);
+        const totalPoints = rawScores[cat].char + rawScores[cat].int + rawScores[cat].exp;
+
+        categoryResults.push({
+          code: cat,
+          name: careerDatabase[cat].name,
+          totalPoints: totalPoints,
+          cScore: Math.round(cScore),
+          iScore: Math.round(iScore),
+          eScore: Math.round(eScore),
+          currentFit: currentFit,
+          potentialFit: potentialFit,
+          skillGapIndex: skillGapIndex
+        });
+      });
+
+      // Sort by Current Fit descending
+      categoryResults.sort((a, b) => b.currentFit - a.currentFit);
+
+      const topResult = categoryResults[0];
+      const topMeta = careerDatabase[topResult.code];
+
+      // Render Top Banner
+      document.getElementById('dnaArchetype').innerText = topMeta.archetype;
+      document.getElementById('dnaDescription').innerText = topMeta.desc;
+      document.getElementById('topMatchScore').innerText = `${topResult.currentFit}%`;
+      document.getElementById('topMatchName').innerText = topMeta.name;
+
+      // Render Table
+      const tbody = document.getElementById('careerTableBody');
+      tbody.innerHTML = '';
+      categoryResults.forEach((res, idx) => {
+        const row = document.createElement('tr');
+        row.className = idx === 0 ? 'bg-brand-50/40 font-semibold' : 'hover:bg-slate-50';
+        row.innerHTML = `
+          <td class="px-6 py-4 flex items-center space-x-2">
+            ${idx === 0 ? '<span class="px-2 py-0.5 bg-brand-600 text-white text-[10px] rounded-full font-bold">TOP</span>' : ''}
+            <span class="text-slate-900">${res.name}</span>
+          </td>
+          <td class="px-6 py-4">
+            <span class="text-slate-900 font-bold">${res.currentFit}%</span>
+          </td>
+          <td class="px-6 py-4 text-emerald-600 font-bold">${res.potentialFit}%</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-16 bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                <div class="bg-amber-500 h-full" style="width: ${res.skillGapIndex}%"></div>
+              </div>
+              <span class="text-xs text-slate-500">${res.skillGapIndex}%</span>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${
+              res.skillGapIndex < 35 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+            }">
+              ${res.skillGapIndex < 35 ? 'Ready to Apply' : 'Need Upskilling'}
+            </span>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      // Render Gap Analysis
+      const gapContainer = document.getElementById('gapContainer');
+      gapContainer.innerHTML = '';
+      topMeta.gaps.forEach(gap => {
+        const div = document.createElement('div');
+        div.className = "p-3 bg-slate-50 rounded-xl border border-slate-200";
+        div.innerHTML = `
+          <div class="flex justify-between text-xs font-bold mb-1">
+            <span class="text-slate-800">${gap.title}</span>
+            <span class="text-amber-600">${gap.req}</span>
+          </div>
+          <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+            <div class="bg-amber-500 h-full w-3/4"></div>
+          </div>
+        `;
+        gapContainer.appendChild(div);
+      });
+
+      // Render Timeline Roadmap
+      document.getElementById('shortTermTitle').innerText = topMeta.shortRole;
+      document.getElementById('shortTermDesc').innerText = topMeta.shortDesc;
+      document.getElementById('shortTermAction').innerText = topMeta.shortAction;
+
+      document.getElementById('medTermTitle').innerText = topMeta.medRole;
+      document.getElementById('medTermDesc').innerText = topMeta.medDesc;
+
+      document.getElementById('longTermTitle').innerText = topMeta.longRole;
+      document.getElementById('longTermDesc').innerText = topMeta.longDesc;
+
+      // Render Charts
+      renderCharts(categoryResults);
+    }
+
+    function renderCharts(results) {
+      // Radar Chart
+      const ctxRadar = document.getElementById('radarChart').getContext('2d');
+      if (radarChartInstance) radarChartInstance.destroy();
+      radarChartInstance = new Chart(ctxRadar, {
+        type: 'radar',
+        data: {
+          labels: ['Keuangan', 'SDM', 'Bisnis Digital', 'Pemasaran'],
+          datasets: [
+            {
+              label: 'Current Fit (%)',
+              data: [
+                results.find(x => x.code === 'KEU').currentFit,
+                results.find(x => x.code === 'SDM').currentFit,
+                results.find(x => x.code === 'BDG').currentFit,
+                results.find(x => x.code === 'MKT').currentFit
+              ],
+              backgroundColor: 'rgba(59, 130, 246, 0.2)',
+              borderColor: '#3b82f6',
+              borderWidth: 2,
+              pointBackgroundColor: '#3b82f6'
+            },
+            {
+              label: 'Potential Fit (%)',
+              data: [
+                results.find(x => x.code === 'KEU').potentialFit,
+                results.find(x => x.code === 'SDM').potentialFit,
+                results.find(x => x.code === 'BDG').potentialFit,
+                results.find(x => x.code === 'MKT').potentialFit
+              ],
+              backgroundColor: 'rgba(16, 185, 129, 0.15)',
+              borderColor: '#10b981',
+              borderWidth: 2,
+              borderDash: [4, 4],
+              pointBackgroundColor: '#10b981'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              angleLines: { color: '#e2e8f0' },
+              grid: { color: '#e2e8f0' },
+              suggestedMin: 0,
+              suggestedMax: 100,
+              ticks: { display: false }
+            }
+          },
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+          }
+        }
+      });
+
+      // Bar Chart
+      const ctxBar = document.getElementById('barChart').getContext('2d');
+      if (barChartInstance) barChartInstance.destroy();
+      barChartInstance = new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+          labels: ['Keuangan', 'SDM', 'Bisnis Digital', 'Pemasaran'],
+          datasets: [{
+            label: 'Total Poin Terkumpul (Maks 15)',
+            data: [
+              results.find(x => x.code === 'KEU').totalPoints,
+              results.find(x => x.code === 'SDM').totalPoints,
+              results.find(x => x.code === 'BDG').totalPoints,
+              results.find(x => x.code === 'MKT').totalPoints
+            ],
+            backgroundColor: ['#3b82f6', '#10b981', '#a855f7', '#f59e0b'],
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, max: 15, ticks: { stepSize: 3 } }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    function resetApp() {
+      currentQuestionIndex = 0;
+      userAnswers = new Array(15).fill(null);
+      document.getElementById('resultScreen').classList.add('hidden');
+      document.getElementById('restartBtn').classList.add('hidden');
+      document.getElementById('printBtn').classList.add('hidden');
+      document.getElementById('personaScreen').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
